@@ -7,7 +7,9 @@ import copy, random
 import threading
 import multiprocessing
 import Queue
+
 allspeed = 3
+Enemy_exist_sametime = False
 
 class myRect(pygame.Rect):
     """ Add type property """
@@ -2338,7 +2340,11 @@ class Game():
 
         self.reloadPlayers()
 
-        gtimer.add(3000, lambda :self.spawnEnemy())
+        Enemy_sametime = 1
+        if Enemy_exist_sametime is True:
+            Enemy_sametime = 0
+
+        gtimer.add(3000*Enemy_sametime, lambda :self.spawnEnemy())
 
         # if True, start "game over" animation
         self.game_over = False
