@@ -9,7 +9,8 @@ import multiprocessing
 import Queue
 
 allspeed = 3
-Enemy_exist_sametime = False
+max_enemies = 14 
+Enemy_exist_sametime = True 
 
 class myRect(pygame.Rect):
     """ Add type property """
@@ -22,14 +23,6 @@ class Timer(object):
         self.timers = []
 
     def add(self, interval, f, repeat = -1):
-
-
-
-
-
-
-
-
         options = {
             "interval"    : interval,
             "callback"    : f,
@@ -394,7 +387,7 @@ class Level():
         global sprites
 
         # max number of enemies simultaneously  being on map
-        self.max_active_enemies = 4
+        self.max_active_enemies = max_enemies
 
         tile_images = [
             pygame.Surface((8*2, 8*2)),
@@ -1062,13 +1055,25 @@ class Enemy(Tank):
 
         global players, enemies
 
+        ## Spawning Position 
         available_positions = [
             [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [12 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [24 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2,  (self.level.TILE_SIZE * 2 - self.rect.height) / 2]
+            [8 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [15 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2,  (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [23* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [30* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 5 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 9 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 13 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 17 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 5 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 9 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 13 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
+            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 17 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2]
 
         ]
-
+        available_positions = available_positions[:max_enemies]
         random.shuffle(available_positions)
 
         for pos in available_positions:
@@ -1092,7 +1097,6 @@ class Enemy(Tank):
                 continue
 
             # collisions with players
-
 
             collision = False
             for player in players:
@@ -2314,7 +2318,7 @@ class Game():
 
         # set number of enemies by types (basic, fast, power, armor) according to level
         levels_enemies = (
-            (18,2,0,0), (10,10,10,10), (14,4,0,2), (2,5,10,3), (8,5,5,2),
+            (18,2,0,0), (10,10,0,0), (1,4,0,2), (2,5,10,3), (8,5,5,2),
             (9,2,7,2), (7,4,6,3), (7,4,7,2), (6,4,7,3), (12,2,4,2),
             (5,5,4,6), (0,6,8,6), (0,8,8,4), (0,4,10,6), (0,2,10,8),
             (16,2,0,2), (8,2,8,2), (2,8,6,4), (4,4,4,8), (2,8,2,8),
@@ -2331,8 +2335,9 @@ class Game():
             enemies_l = levels_enemies[34]
 
         self.level.enemies_left = [0]*enemies_l[0] + [1]*enemies_l[1] + [2]*enemies_l[2] + [3]*enemies_l[3]
+        print(self.level.enemies_left)
         random.shuffle(self.level.enemies_left)
-
+        print(self.level.enemies_left)
         if play_sounds:
 
             sounds["start"].play()
@@ -2389,7 +2394,7 @@ class Game():
             if c_control.empty()!=True:
                 try:
                     operations = c_control.get(False)
-                except Queue.Empty:
+                except queue.Empty:
                     skip_this=True
             #---------------------------------------------
 
@@ -2524,7 +2529,7 @@ class Game():
                     if operations[0]==1:
                         if players[0].fire() and play_sounds:
                             sounds["fire"].play()
-                    if operations[1]!= None and operations[1]<4:
+                    if operations[1]<4:
                         players[0].pressed[operations[1]] = True
                         if player.pressed[0] == True:
                             player.move(self.DIR_UP);
