@@ -61,7 +61,7 @@ class ai_agent():
                                                                                                 player_rect.center))
 
             # default position
-            default_pos_rect = pygame.Rect(320, 320, 26, 26)
+            default_pos_rect = pygame.Rect(320, 320, 40, 40)
             # exists enemy
             if sorted_enemy_with_distance_to_castle:
                 # if enemy distance with castle < 150, chase it
@@ -138,7 +138,7 @@ class ai_agent():
             current = (current_left, current_top)
 
             # goal test
-            temp_rect = pygame.Rect(current_left, current_top, 26, 26)
+            temp_rect = pygame.Rect(current_left, current_top, 40, 40)
             if self.is_goal(temp_rect, goal_rect):
                 break
 
@@ -235,7 +235,7 @@ class ai_agent():
         new_left = left
         if not (new_top < 0):
             move_up = True
-            temp_rect = pygame.Rect(new_left, new_top, 26, 26)
+            temp_rect = pygame.Rect(new_left, new_top, 40, 40)
 
             # check collision with enemy except goal
             for enemy in self.mapinfo[1]:
@@ -265,9 +265,9 @@ class ai_agent():
         # move right
         new_top = top
         new_left = left + speed
-        if not (new_left > (416 - 26)):
+        if not (new_left > (640 - 40)):
             move_right = True
-            temp_rect = pygame.Rect(new_left, new_top, 26, 26)
+            temp_rect = pygame.Rect(new_left, new_top, 40, 40)
 
             # check collision with enemy except goal
             for enemy in self.mapinfo[1]:
@@ -297,9 +297,9 @@ class ai_agent():
         # move down
         new_top = top + speed
         new_left = left
-        if not (new_top > (416 - 26)):
+        if not (new_top > (640 - 40)):
             move_down = True
-            temp_rect = pygame.Rect(new_left, new_top, 26, 26)
+            temp_rect = pygame.Rect(new_left, new_top, 40, 40)
 
             # check collision with enemy except goal
             for enemy in self.mapinfo[1]:
@@ -331,7 +331,7 @@ class ai_agent():
         new_left = left - speed
         if not (new_left < 0):
             move_left = True
-            temp_rect = pygame.Rect(new_left, new_top, 26, 26)
+            temp_rect = pygame.Rect(new_left, new_top, 40, 40)
 
             # check collision with enemy except goal
             for enemy in self.mapinfo[1]:
@@ -528,10 +528,10 @@ class ai_agent():
                     new_top = player_rect.top
                     new_left = player_rect.left
 
-                temp_rect = pygame.Rect(new_left, new_top, 26, 26)
+                temp_rect = pygame.Rect(new_left, new_top, 40, 40)
                 # check collision with tile
 
-                if 0 <= new_top <= 416 - 26 and 0 <= new_left <= 416 - 26:
+                if 0 <= new_top <= 640 - 40 and 0 <= new_left <= 640 - 40:
                     collision = False
                     for tile_info in self.mapinfo[2]:
                         tile_rect = tile_info[0]
