@@ -5,11 +5,13 @@ import os, pygame, time, random, uuid, sys
 import ai
 import copy, random
 import threading
+import signal
+
 import multiprocessing
 import Queue
 
 allspeed = 3
-max_enemies = 14 
+max_enemies = 
 Enemy_exist_sametime = True 
 
 class myRect(pygame.Rect):
@@ -389,6 +391,7 @@ class Level():
         # max number of enemies simultaneously  being on map
         self.max_active_enemies = max_enemies
 
+
         tile_images = [
             pygame.Surface((8*2, 8*2)),
             sprites.subsurface(48*2, 64*2, 8*2, 8*2),
@@ -411,7 +414,7 @@ class Level():
 
         self.obstacle_rects = []
 
-        level_nr = 1 if level_nr == None else level_nr%35
+        level_nr = 1 if level_nr == None else level_nr@35
         if level_nr == 0:
 
             level_nr = 35
@@ -508,7 +511,7 @@ class Level():
                 elif ch == "~":
                     self.mapr.append(myRect(x, y, self.TILE_SIZE, self.TILE_SIZE, self.TILE_WATER))
 
-                elif ch == "%":
+                elif ch == "@":
                     self.mapr.append(myRect(x, y, self.TILE_SIZE, self.TILE_SIZE, self.TILE_GRASS))
 
                 elif ch == "-":
@@ -1271,7 +1274,7 @@ class Enemy(Tank):
         # if we can go anywhere else, turn around
         if new_direction == None:
             new_direction = opposite_direction
-            print ("nav izejas. griezhamies")
+          
 
         # fix tanks position
         if fix_direction and new_direction == self.direction:
@@ -1717,22 +1720,9 @@ class Game():
 
             for event in pygame.event.get():
 
-
                 if event.type == pygame.QUIT:
                     quit()
                 elif event.type == pygame.KEYDOWN:
-
-
-
-
-
-
-
-
-
-
-
-
                     if event.key == pygame.K_q:
                         quit()
                     elif event.key == pygame.K_UP:
@@ -2019,7 +2009,7 @@ class Game():
 
 
 
-            if n % 2 == 1:
+            if n @ 2 == 1:
                 xpos = x + 16
                 ypos+= 17
             else:
@@ -2188,29 +2178,15 @@ class Game():
             surf_letter = pygame.Surface((56, 56))
             for j, row in enumerate(self.chunks(binstr, 7)):
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 for i, bit in enumerate(row):
                     if bit == "1":
-                        if i%2 == 0 and j%2 == 0:
+                        if i@2 == 0 and j@2 == 0:
                             surf_letter.blit(brick1, [x, y])
-                        elif i%2 == 1 and j%2 == 0:
+                        elif i@2 == 1 and j@2 == 0:
                             surf_letter.blit(brick2, [x, y])
-                        elif i%2 == 1 and j%2 == 1:
+                        elif i@2 == 1 and j@2 == 1:
                             surf_letter.blit(brick3, [x, y])
-                        elif i%2 == 0 and j%2 == 1:
+                        elif i@2 == 0 and j@2 == 1:
                             surf_letter.blit(brick4, [x, y])
                         if x > letter_w:
                             letter_w = x
@@ -2318,7 +2294,7 @@ class Game():
 
         # set number of enemies by types (basic, fast, power, armor) according to level
         levels_enemies = (
-            (18,2,0,0), (10,10,0,0), (1,4,0,2), (2,5,10,3), (8,5,5,2),
+            (18,2,0,0), (5,5,0,0), (6,6,0,2), (7,7,2,3), (8,5,5,2),
             (9,2,7,2), (7,4,6,3), (7,4,7,2), (6,4,7,3), (12,2,4,2),
             (5,5,4,6), (0,6,8,6), (0,8,8,4), (0,4,10,6), (0,2,10,8),
             (16,2,0,2), (8,2,8,2), (2,8,6,4), (4,4,4,8), (2,8,2,8),
@@ -2335,9 +2311,8 @@ class Game():
             enemies_l = levels_enemies[34]
 
         self.level.enemies_left = [0]*enemies_l[0] + [1]*enemies_l[1] + [2]*enemies_l[2] + [3]*enemies_l[3]
-        print(self.level.enemies_left)
         random.shuffle(self.level.enemies_left)
-        print(self.level.enemies_left)
+
         if play_sounds:
 
             sounds["start"].play()
@@ -2394,7 +2369,7 @@ class Game():
             if c_control.empty()!=True:
                 try:
                     operations = c_control.get(False)
-                except queue.Empty:
+                except Queue.Empty:
                     skip_this=True
             #---------------------------------------------
 
@@ -2412,19 +2387,6 @@ class Game():
                     self.clear_queue(c_control)
                     quit()
                 elif event.type == pygame.KEYDOWN and not self.game_over and self.active:
-
-
-
-
-
-
-
-
-
-
-
-
-
                     if event.key == pygame.K_q:
                         self.kill_ai_process(p)
                         self.clear_queue(p_mapinfo)
@@ -2437,25 +2399,6 @@ class Game():
                             pygame.mixer.stop()
                         else:
                             sounds["bg"].play(-1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     for player in players:
                         if player.state == player.STATE_ALIVE:
                             try:
@@ -2477,20 +2420,6 @@ class Game():
 
                 elif event.type == pygame.KEYUP and not self.game_over and self.active:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     for player in players:
                         if player.state == player.STATE_ALIVE:
                             try:
@@ -2510,22 +2439,6 @@ class Game():
 
             for player in players:
                 if player.state == player.STATE_ALIVE and not self.game_over and self.active:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     if operations[0]==1:
                         if players[0].fire() and play_sounds:
                             sounds["fire"].play()
@@ -2549,12 +2462,6 @@ class Game():
 
                     enemies.remove(enemy)
                     if len(self.level.enemies_left) == 0 and len(enemies) == 0:
-
-
-
-
-
-
                         self.kill_ai_process(p)
                         self.clear_queue(p_mapinfo)
                         self.clear_queue(c_control)
@@ -2572,15 +2479,6 @@ class Game():
                             self.triggerBonus(bonus, player)
                             player.bonus = None
                     elif player.state == player.STATE_DEAD:
-
-
-
-
-
-
-
-
-
                         self.superpowers = 0
                         player.lives -= 1
                         if player.lives > 0:
@@ -2590,18 +2488,11 @@ class Game():
                             self.clear_queue(p_mapinfo)
                             self.clear_queue(c_control)
                             self.gameOver()
-
-
             for bullet in bullets:
                 if bullet.state == bullet.STATE_REMOVED:
-
-
-
                     bullets.remove(bullet)
                 else:
                     bullet.update()
-
-
 
 
             for bonus in bonuses:
@@ -2610,41 +2501,11 @@ class Game():
 
 
 
-
             for label in labels:
                 if not label.active:
                     labels.remove(label)
-
-
-
-
-
-
-
-
-
             gtimer.update(time_passed)
-
-
-
-
-
-
-
-
             self.draw()
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     def get_mapinfo(self):
@@ -2674,16 +2535,13 @@ class Game():
 
     def kill_ai_process(self,p):
 
-        #p.terminate()
+        p.terminate()
         os.kill(p.pid,9)
+        # os.killpg(os.getpgid(p.pid), signal.SIGTERM)
         print ("kill ai_process!!")
+
     def clear_queue(self,queue):
-        if queue.empty()!=True:
-
-
-
-
-
+        if Queue.empty()!=True:
             try:
                 queue.get(False)
                 print ("clear queue!!")

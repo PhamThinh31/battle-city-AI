@@ -46,7 +46,6 @@ class ai_agent():
     def operations(self, p_mapinfo, c_control):
 
         while True:
-            # -----your ai operation,This code is a random strategy,please design your ai !!-----------------------
             self.Get_mapInfo(p_mapinfo)
 
             player_rect = self.mapinfo[3][0][0]
@@ -365,21 +364,18 @@ class ai_agent():
         if enemy_rect.left <= player_rect.centerx <= enemy_rect.right and abs(player_rect.top - enemy_rect.bottom) <= 151:
             # enemy on top
             if enemy_rect.bottom <= player_rect.top:
-                print('enemy on top')
                 return 0
             # enemy on bottom
             elif player_rect.bottom <= enemy_rect.top:
-                print('enemy on bottom')
                 return 2
         # horizontal inline
         if enemy_rect.top <= player_rect.centery <= enemy_rect.bottom and abs(player_rect.left - enemy_rect.right) <= 151:
             # enemy on left
             if enemy_rect.right <= player_rect.left:
-                print('enemy on left')
                 return 3
             # enemy on right
             elif player_rect.right <= enemy_rect.left:
-                print('enemy on right')
+   
                 return 1
         return False
 
@@ -403,7 +399,7 @@ class ai_agent():
             min_dist_with_bullet = float(1e30000)
 
         # trigger when bullet distance with player <= 100
-        if min_dist_with_bullet <= 120:
+        if min_dist_with_bullet <= 100:
             # pick the nearest bullet
             bullet_rect = sorted_bullet_info_list[0][0]
             bullet_direction = sorted_bullet_info_list[0][1]
@@ -417,14 +413,14 @@ class ai_agent():
                         directions.append(2)
                         # shoot
                         shoot = 1
-                        print ('block bullet from down')
+
                     # direction to down, on player's top
                     if bullet_direction == 2 and bullet_rect.top < player_rect.top:
                         # add direction to up
                         directions.append(0)
                         # shoot
                         shoot = 1
-                        print ('block bullet from up')
+                  
                 # not too near
                 else:
                     # if bullet on player's right
@@ -433,13 +429,13 @@ class ai_agent():
                         directions.append(3)
                         # go right
                         # directions.append(1)
-                        print ('go left, skip bullet')
+                      
                     else:
                         # go right
                         directions.append(1)
                         # go left
                         # directions.append(3)
-                        print ('go right, skip bullet')
+                
             # distance with center y <= 20
             elif abs(bullet_rect.centery - player_rect.centery) <= 25:
                 # distance with center y <= 2
@@ -450,25 +446,25 @@ class ai_agent():
                         directions.append(3)
                         # shoot
                         shoot = 1
-                        print ('block bullet from left')
+                     
                     # bullet direction to left, on player's right
                     if bullet_direction == 3 and bullet_rect.left > player_rect.left:
                         # go right
                         directions.append(1)
                         # shoot
                         shoot = 1
-                        print ('block bullet from right')
+                       
                 # not too near
                 else:
                     # on player bottom
                     if bullet_rect.top > player_rect.centery:
                         directions.append(0)
                         directions.append(2)
-                        print ('go up, skip bullet')
+                       
                     else:
                         directions.append(2)
                         directions.append(0)
-                        print ('go down, skip bullet')
+                      
             # neither distance with center x or center y <= 20
             else:
                 # inline with enemy direction is same as a star direction
@@ -482,22 +478,22 @@ class ai_agent():
                     if bullet_rect.left > player_rect.left:
                         if 1 in directions:
                             directions.remove(1)
-                        print ('bullet on rhs, don\'t go right')
+                       
                     else:
                         if 3 in directions:
                             directions.remove(3)
-                        print ('bullet on lhs, don\'t go left')
+                      
                 # bullet direction to left or right
                 if bullet_direction == 1 or bullet_direction == 3:
                     # bullet on bottom
                     if bullet_rect.top > player_rect.top:
                         if 2 in directions:
                             directions.remove(2)
-                        print ('bullet on bottom, don\'t go down')
+                       
                     else:
                         if 0 in directions:
                             directions.remove(0)
-                        print ('bullt on top, don\'t go up')
+                      
         # distance with nearest bullet > 100 (threshold)
         else:
             # if inlined
