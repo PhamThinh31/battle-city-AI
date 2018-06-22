@@ -10,8 +10,8 @@ import signal
 import multiprocessing
 import Queue
 
-allspeed = 3
-max_enemies = 
+allspeed = 1
+max_enemies = 14
 Enemy_exist_sametime = True 
 
 class myRect(pygame.Rect):
@@ -414,7 +414,7 @@ class Level():
 
         self.obstacle_rects = []
 
-        level_nr = 1 if level_nr == None else level_nr@35
+        level_nr = 1 if level_nr == None else level_nr%35
         if level_nr == 0:
 
             level_nr = 35
@@ -511,7 +511,7 @@ class Level():
                 elif ch == "~":
                     self.mapr.append(myRect(x, y, self.TILE_SIZE, self.TILE_SIZE, self.TILE_WATER))
 
-                elif ch == "@":
+                elif ch == "%":
                     self.mapr.append(myRect(x, y, self.TILE_SIZE, self.TILE_SIZE, self.TILE_GRASS))
 
                 elif ch == "-":
@@ -2009,7 +2009,7 @@ class Game():
 
 
 
-            if n @ 2 == 1:
+            if n % 2 == 1:
                 xpos = x + 16
                 ypos+= 17
             else:
@@ -2180,13 +2180,13 @@ class Game():
 
                 for i, bit in enumerate(row):
                     if bit == "1":
-                        if i@2 == 0 and j@2 == 0:
+                        if i%2 == 0 and j%2 == 0:
                             surf_letter.blit(brick1, [x, y])
-                        elif i@2 == 1 and j@2 == 0:
+                        elif i%2 == 1 and j%2 == 0:
                             surf_letter.blit(brick2, [x, y])
-                        elif i@2 == 1 and j@2 == 1:
+                        elif i%2 == 1 and j%2 == 1:
                             surf_letter.blit(brick3, [x, y])
-                        elif i@2 == 0 and j@2 == 1:
+                        elif i%2 == 0 and j%2 == 1:
                             surf_letter.blit(brick4, [x, y])
                         if x > letter_w:
                             letter_w = x
@@ -2294,8 +2294,8 @@ class Game():
 
         # set number of enemies by types (basic, fast, power, armor) according to level
         levels_enemies = (
-            (18,2,0,0), (5,5,0,0), (6,6,0,2), (7,7,2,3), (8,5,5,2),
-            (9,2,7,2), (7,4,6,3), (7,4,7,2), (6,4,7,3), (12,2,4,2),
+            (18,2,0,0), (5,5,4,0), (6,6,2,2), (7,7,2,3), (8,5,5,4),
+            (9,2,7,5), (7,4,6,3), (7,4,7,2), (6,4,7,3), (12,2,4,2),
             (5,5,4,6), (0,6,8,6), (0,8,8,4), (0,4,10,6), (0,2,10,8),
             (16,2,0,2), (8,2,8,2), (2,8,6,4), (4,4,4,8), (2,8,2,8),
             (6,2,8,4), (6,8,2,4), (0,10,4,6), (10,4,4,2), (0,8,2,10),
@@ -2541,9 +2541,9 @@ class Game():
         print ("kill ai_process!!")
 
     def clear_queue(self,queue):
-        if Queue.empty()!=True:
+        if queue.empty()!=True:
             try:
-                queue.get(False)
+                ueue.get(False)
                 print ("clear queue!!")
             except Queue.Empty:
                 print ("Queue already is empty!!")
