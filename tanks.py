@@ -260,8 +260,14 @@ class Bullet():
         # tiles but explosion remains 1
         rects = self.level.obstacle_rects
         collisions = self.rect.collidelistall(rects)
-
-
+        if collisions != []:
+            for i in collisions:
+                if self.level.hitTile(rects[i].topleft, self.power, self.owner == self.OWNER_PLAYER):
+                    has_collided = True
+        if has_collided:
+            self.explode()
+            return
+                
         # check for collisions with other bullets
         for bullet in bullets:
             if self.state == self.STATE_ACTIVE and bullet.owner != self.owner and bullet != self and self.rect.colliderect(bullet.rect):
@@ -451,7 +457,7 @@ class Level():
 
                     if play_sounds and sound:
                         sounds["brick"].play()
-                    #self.mapr.remove(tile)             ###tri
+                    self.mapr.remove(tile)             ###tri
                     self.updateObstacleRects()
                     return True
                 elif tile.type == self.TILE_STEEL:
@@ -466,7 +472,7 @@ class Level():
                     if play_sounds and sound:
                         sounds["steel"].play()
                     if power == 2:
-                        #self.mapr.remove(tile)                 ###tri
+                        self.mapr.remove(tile)                 ###tri
                         self.updateObstacleRects()
                     return True
                 else:
@@ -2051,7 +2057,7 @@ class Game():
 
             hiscore = self.loadHiscore()
 
-            screen.blit(self.font.render("GAME- "+str(hiscore), True, pygame.Color('red')), [200, 50])
+            screen.blit(self.font.render("GAME- "+str(hiscore), True, pygame.Color('red')), [250, 50])
 
             screen.blit(self.font.render("1 PLAYER", True, pygame.Color('pink')), [275, 400])
             screen.blit(self.font.render("2 PLAYERS", True, pygame.Color('pink')), [275, 425])
