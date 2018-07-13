@@ -11,7 +11,7 @@ import multiprocessing
 import Queue
 
 allspeed = 1
-max_enemies = 14
+max_enemies = 4
 Enemy_exist_sametime = True 
 
 class myRect(pygame.Rect):
@@ -40,8 +40,6 @@ class Timer(object):
     def destroy(self, uuid_nr):
         for timer in self.timers:
             if timer["uuid"] == uuid_nr:
-
-
                 self.timers.remove(timer)
                 return
 
@@ -106,12 +104,6 @@ class Bonus():
         self.rect = pygame.Rect(random.randint(0, 640-32), random.randint(0, 640-32), 32, 32)     ###tri
 
         self.bonus = random.choice([
-
-
-
-
-
-
 
             self.BONUS_GRENADE,
             self.BONUS_HELMET,
@@ -320,6 +312,7 @@ class Bullet():
                     self.destroy()
                     return
 
+
         # check for collision with castle
 
     def explode(self):
@@ -361,7 +354,6 @@ class Label():
 class Explosion():
     def __init__(self, position, interval = None, images = None):
 
-
         global sprites
 
         self.position = [position[0]-16, position[1]-16]
@@ -398,8 +390,6 @@ class Explosion():
         """ Advace to the next image """
         if len(self.images) > 0:
             self.image = self.images.pop()
-
-
         else:
             self.active = False
 
@@ -475,28 +465,17 @@ class Level():
             if tile.topleft == pos:
                 if tile.type == self.TILE_BRICK:
 
-
-
-
-
                     if play_sounds and sound:
                         sounds["brick"].play()
-                    #self.mapr.remove(tile)             ###tri
+                    self.mapr.remove(tile)             
                     self.updateObstacleRects()
                     return True
                 elif tile.type == self.TILE_STEEL:
 
-
-
-
-
-
-
-
                     if play_sounds and sound:
                         sounds["steel"].play()
                     if power == 2:
-                        #self.mapr.remove(tile)                 ###tri
+                        self.mapr.remove(tile)                
                         self.updateObstacleRects()
                     return True
                 else:
@@ -1127,13 +1106,8 @@ class Enemy(Tank):
             collision = False
             for enemy in enemies:
                 if enemy_rect.colliderect(enemy.rect):
-
-
                     collision = True
                     continue
-
-
-
             if collision:
                 continue
 
@@ -2655,7 +2629,6 @@ class Game():
         mapinfo.append([])
         for bullet in bullets:
             if bullet.owner == bullet.OWNER_ENEMY:
-
                 nrect=bullet.rect.copy()
                 mapinfo[0].append([nrect,bullet.direction,bullet.speed])
         for enemy in enemies:
@@ -2678,7 +2651,7 @@ class Game():
         print ("kill ai_process!!")
 
     def clear_queue(self,queue):
-        if queue.empty()!=True:
+        if Queue.empty()!=True:
             try:
                 ueue.get(False)
                 print ("clear queue!!")
