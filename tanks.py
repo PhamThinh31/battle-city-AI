@@ -6,13 +6,20 @@ import ai
 import copy, random
 import threading
 import signal
-
+import time
+import numpy as np
 import multiprocessing
 import Queue
 
 allspeed = 1
-max_enemies = 14
-Enemy_exist_sametime = True 
+max_enemies = 5
+Enemy_exist_sametime = True
+
+stage_exist = []
+if(max_enemies>5):
+    max_enemies = 5
+
+mode_cross = True
 
 class myRect(pygame.Rect):
     """ Add type property """
@@ -137,7 +144,10 @@ class Bonus():
 
 class Bullet():
     # direction constants
-    (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)
+    if mode_cross:
+        (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT, DIR_UPRIGHT, DIR_UPLEFT, DIR_DOWNRIGHT, DIR_DOWNLEFT) = range(8)
+    else:
+        (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)
 
     # bullet's stated
     (STATE_REMOVED, STATE_ACTIVE, STATE_EXPLODING) = range(3)
@@ -175,6 +185,24 @@ class Bullet():
         elif direction == self.DIR_LEFT:
             self.image = pygame.transform.rotate(self.image, 90)
             self.rect = pygame.Rect(position[0] - 8 , position[1] + 11, 8, 6)
+
+  
+        elif direction == self.DIR_UPRIGHT:
+            self.image = pygame.transform.rotate(self.image, 0)
+            self.rect = pygame.Rect(position[0] + 11, position[1] - 8, 6, 8)
+            direction == self.DIR_UP
+        elif direction == self.DIR_UPLEFT:
+            self.image = pygame.transform.rotate(self.image, 0)
+            self.rect = pygame.Rect(position[0] + 11, position[1] - 8, 6, 8)
+            direction == self.DIR_UP
+        elif direction == self.DIR_DOWNRIGHT:
+            self.image = pygame.transform.rotate(self.image, 180)
+            self.rect = pygame.Rect(position[0] + 11, position[1] + 26, 6, 8)
+            direction == self.DIR_DOWN
+        elif direction == self.DIR_DOWNLEFT:
+            self.image = pygame.transform.rotate(self.image, 180)
+            self.rect = pygame.Rect(position[0] + 11, position[1] + 26, 6, 8)
+            direction == self.DIR_DOWN
 
         self.explosion_images = [
             sprites.subsurface(0, 80*2, 32*2, 32*2),
@@ -247,9 +275,38 @@ class Bullet():
 
             if self.rect.left < 0:
                 if play_sounds and self.owner == self.OWNER_PLAYER:
+                    sounds["steel"].play()
+                self.explode()
+                return
 
+        elif self.direction == self.DIR_UPRIGHT:
+            self.rect.topleft = [self.rect.left, self.rect.top - self.speed]
+            if self.rect.top < 0:
+                if play_sounds and self.owner == self.OWNER_PLAYER:
+                    sounds["steel"].play()
+                self.explode()
+                return
 
+        elif self.direction == self.DIR_UPLEFT:
+            self.rect.topleft = [self.rect.left, self.rect.top - self.speed]
+            if self.rect.top < 0:
+                if play_sounds and self.owner == self.OWNER_PLAYER:
+                    sounds["steel"].play()
+                self.explode()
+                return
 
+        elif self.direction == self.DIR_DOWNRIGHT:
+            self.rect.topleft = [self.rect.left, self.rect.top + self.speed]
+            if self.rect.top > (640 - self.rect.height):            ###tri 640-416
+                if play_sounds and self.owner == self.OWNER_PLAYER:
+                    sounds["steel"].play()
+                self.explode()
+                return
+
+        elif self.direction == self.DIR_DOWNLEFT:
+            self.rect.topleft = [self.rect.left, self.rect.top + self.speed]
+            if self.rect.top > (640 - self.rect.height):            ###tri 640-416
+                if play_sounds and self.owner == self.OWNER_PLAYER:
                     sounds["steel"].play()
                 self.explode()
                 return
@@ -260,6 +317,15 @@ class Bullet():
         # tiles but explosion remains 1
         rects = self.level.obstacle_rects
         collisions = self.rect.collidelistall(rects)
+
+
+        if collisions != []:
+            for i in collisions:
+                if self.level.hitTile(rects[i].topleft, self.power, self.owner == self.OWNER_PLAYER):
+                    has_collided = True
+        if has_collided:
+            self.explode()
+            return
 
 
         # check for collisions with other bullets
@@ -445,28 +511,17 @@ class Level():
             if tile.topleft == pos:
                 if tile.type == self.TILE_BRICK:
 
-
-
-
-
                     if play_sounds and sound:
                         sounds["brick"].play()
-                    #self.mapr.remove(tile)             ###tri
+                    self.mapr.remove(tile)             ###tri
                     self.updateObstacleRects()
                     return True
                 elif tile.type == self.TILE_STEEL:
 
-
-
-
-
-
-
-
                     if play_sounds and sound:
                         sounds["steel"].play()
                     if power == 2:
-                        #self.mapr.remove(tile)                 ###tri
+                        self.mapr.remove(tile)                 ###tri
                         self.updateObstacleRects()
                     return True
                 else:
@@ -481,15 +536,17 @@ class Level():
             self.tile_water = self.tile_water1
 
 
-    def loadLevel(self, level_nr = 1):
+    def loadLevel(self, level_nr = None):
         """ Load specified level
         @return boolean Whether level was loaded
 
         """
-        filename = "levels/"+str(level_nr)
+        temp_ = np.random.randint(1,8)
+        while(temp_ in stage_exist):
+            temp_ = np.random.randint(1,8)
+        stage_exist.append(temp_)
+        filename = "levels/"+str(temp_)  ### Thu level_nr
         if (not os.path.isfile(filename)):
-
-
             return False
         level = []
         f = open(filename, "r")
@@ -594,7 +651,10 @@ class Level():
 class Tank():
 
     # possible directions
-    (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)
+    if mode_cross:
+        (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT, DIR_UPRIGHT, DIR_UPLEFT, DIR_DOWNRIGHT, DIR_DOWNLEFT) = range(8)
+    else:
+        (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)
 
     # states
     (STATE_SPAWNING, STATE_DEAD, STATE_ALIVE, STATE_EXPLODING) = range(4)
@@ -645,10 +705,16 @@ class Tank():
         self.bonus = None
 
         # navigation keys: fire, up, right, down, left
-        self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
+        if mode_cross:
+            self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT, pygame.K_t, pygame.K_y, pygame.K_g, pygame.K_h]
+        else:
+            self.controls = [pygame.K_SPACE, pygame.K_UP, pygame.K_RIGHT, pygame.K_DOWN, pygame.K_LEFT]
 
         # currently pressed buttons (navigation only)
-        self.pressed = [False] * 4
+        if mode_cross:
+            self.pressed = [False] * 8
+        else:
+            self.pressed = [False] * 4
 
         self.shield_images = [
             sprites.subsurface(0, 48*2, 16*2, 16*2),
@@ -669,13 +735,16 @@ class Tank():
         self.level = level
 
         if position != None:
-            self.rect = pygame.Rect(position, (40, 40))
+            self.rect = pygame.Rect(position, (26, 26))
 
         else:
-            self.rect = pygame.Rect(0, 0, 40, 40)
+            self.rect = pygame.Rect(0, 0, 26, 26)
 
         if direction == None:
-            self.direction = random.choice([self.DIR_RIGHT, self.DIR_DOWN, self.DIR_LEFT])
+            if mode_cross:
+                self.direction = random.choice([self.DIR_RIGHT, self.DIR_DOWN, self.DIR_LEFT, self.DIR_UP, self.DIR_UPRIGHT, self.DIR_UPLEFT, self.DIR_DOWNRIGHT, self.DIR_DOWNLEFT])
+            else:
+                self.direction = random.choice([self.DIR_RIGHT, self.DIR_DOWN, self.DIR_LEFT])
 
         else:
             self.direction = direction
@@ -820,6 +889,14 @@ class Tank():
             self.image = self.image_down
         elif direction == self.DIR_LEFT:
             self.image = self.image_left
+        elif direction == self.DIR_UPRIGHT:
+            self.image = self.image_up
+        elif direction == self.DIR_UPLEFT:
+            self.image = self.image_up
+        elif direction == self.DIR_DOWNRIGHT:
+            self.image = self.image_down
+        elif direction == self.DIR_DOWNLEFT:
+            self.image = self.image_down
 
         if fix_position:
             new_x = self.nearest(self.rect.left, 8) + 3
@@ -835,7 +912,7 @@ class Tank():
 
     def turnAround(self):
         """ Turn tank into opposite direction """
-        if self.direction in (self.DIR_UP, self.DIR_RIGHT):
+        if self.direction in (self.DIR_UP, self.DIR_RIGHT, self.DIR_UPLEFT, self.DIR_UPRIGHT):
             self.rotate(self.direction + 2, False)
 
         else:
@@ -1058,30 +1135,23 @@ class Enemy(Tank):
 
         global players, enemies
 
+        Usize_width = (self.level.TILE_SIZE * 2 - self.rect.width) / 2
+        Usize_height = (self.level.TILE_SIZE * 2 - self.rect.height) / 2
         ## Spawning Position 
         available_positions = [
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [8 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [15 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2,  (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [23* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [30* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 5 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 9 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 13 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 17 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 5 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 9 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 13 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 17 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2]
-
+            [1* self.level.TILE_SIZE + Usize_width, Usize_height],
+            [18 * self.level.TILE_SIZE + Usize_width, Usize_height],
+            [38 * self.level.TILE_SIZE + Usize_width,  Usize_height],
+            [1* self.level.TILE_SIZE  + Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
+            [38 * self.level.TILE_SIZE + Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
         ]
+
         available_positions = available_positions[:max_enemies]
         random.shuffle(available_positions)
 
         for pos in available_positions:
 
-            enemy_rect = pygame.Rect(pos, [40, 40])
+            enemy_rect = pygame.Rect(pos, [40, 40])  ### Thu 40 hay 26 nhi?1
 
             # collisions with other enemies
 
@@ -1138,23 +1208,52 @@ class Enemy(Tank):
         if self.direction == self.DIR_UP:
             if new_position[1] < 0:
                 self.path = self.generatePath(self.direction, True)
-
                 return
+
         elif self.direction == self.DIR_RIGHT:
             if new_position[0] > (640 - 40):            ###tri
                 self.path = self.generatePath(self.direction, True)
-
                 return
+
         elif self.direction == self.DIR_DOWN:
             if new_position[1] > (640 - 40):            ###tri
                 self.path = self.generatePath(self.direction, True)
-
                 return
+
         elif self.direction == self.DIR_LEFT:
             if new_position[0] < 0:
                 self.path = self.generatePath(self.direction, True)
-
                 return
+
+        elif self.direction == self.DIR_UPRIGHT:
+            if new_position[0] > (640 - 40):
+                self.path = self.generatePath(self.direction, True)
+                return
+            elif new_position[1] < 0:
+                self.path = self.generatePath(self.direction, True)
+                return
+        elif self.direction == self.DIR_UPLEFT:
+            if new_position[0] < 0:
+                self.path = self.generatePath(self.direction, True)
+                return
+            elif new_position[1] < 0:
+                self.path = self.generatePath(self.direction, True)
+                return
+        elif self.direction == self.DIR_DOWNRIGHT:
+            if new_position[0] > (640 - 40):
+                self.path = self.generatePath(self.direction, True)
+                return
+            elif new_position[1] > (640 - 40):
+                self.path = self.generatePath(self.direction, True)
+                return
+        elif self.direction == self.DIR_DOWNLEFT:
+            if new_position[0] < 0:
+                self.path = self.generatePath(self.direction, True)
+                return
+            elif new_position[1] > (640 - 40):
+                self.path = self.generatePath(self.direction, True)
+                return
+
 
         new_rect = pygame.Rect(new_position, [40, 40]) ## thinh 
 
@@ -1202,22 +1301,25 @@ class Enemy(Tank):
         """ If direction is specified, try continue that way, otherwise choose at random
 
         """
-
-        all_directions = [self.DIR_UP, self.DIR_RIGHT, self.DIR_DOWN, self.DIR_LEFT]
+        if mode_cross:
+            all_directions = [self.DIR_UP, self.DIR_RIGHT, self.DIR_DOWN, self.DIR_LEFT, self.DIR_UPRIGHT, self.DIR_UPLEFT, self.DIR_DOWNRIGHT, self.DIR_DOWNLEFT]
+        else:
+            all_directions = [self.DIR_UP, self.DIR_RIGHT, self.DIR_DOWN, self.DIR_LEFT]
 
         if direction == None:
-            if self.direction in [self.DIR_UP, self.DIR_RIGHT]:
+            if self.direction in [self.DIR_UP, self.DIR_RIGHT, self.DIR_UPLEFT, self.DIR_UPRIGHT]:
                 opposite_direction = self.direction + 2
 
             else:
                 opposite_direction = self.direction - 2
+
             directions = all_directions
             random.shuffle(directions)
             directions.remove(opposite_direction)
             directions.append(opposite_direction)
 
         else:
-            if direction in [self.DIR_UP, self.DIR_RIGHT]:
+            if direction in [self.DIR_UP, self.DIR_RIGHT, self.DIR_UPLEFT, self.DIR_UPRIGHT]:
                 opposite_direction = direction + 2
 
             else:
@@ -1228,6 +1330,8 @@ class Enemy(Tank):
 
             else:
                 opposite_direction = direction - 2
+
+
             directions = all_directions
             random.shuffle(directions)
             directions.remove(opposite_direction)
@@ -1249,14 +1353,14 @@ class Enemy(Tank):
 
                     new_direction = direction
                     break
-            elif direction == self.DIR_RIGHT and x < 24:
+            elif direction == self.DIR_RIGHT and x < 38:
                 new_pos_rect = self.rect.move(8, 0)
                 if new_pos_rect.collidelist(self.level.obstacle_rects) == -1:
 
 
                     new_direction = direction
                     break
-            elif direction == self.DIR_DOWN and y < 24:
+            elif direction == self.DIR_DOWN and y < 38:
                 new_pos_rect = self.rect.move(0, 8)
                 if new_pos_rect.collidelist(self.level.obstacle_rects) == -1:
 
@@ -1270,6 +1374,36 @@ class Enemy(Tank):
 
                     new_direction = direction
                     break
+
+            elif direction == self.DIR_UPRIGHT and y > 1 and x < 38:
+                new_pos_rect = self.rect.move(8, -8)
+                if new_pos_rect.collidelist(self.level.obstacle_rects) == -1:
+
+
+                    new_direction = direction
+                    break
+            elif direction == self.DIR_UPLEFT and y > 1 and x > 1:
+                new_pos_rect = self.rect.move(-8, -8)
+                if new_pos_rect.collidelist(self.level.obstacle_rects) == -1:
+
+
+                    new_direction = direction
+                    break
+            elif direction == self.DIR_DOWNRIGHT and y < 38 and x < 38:
+                new_pos_rect = self.rect.move(8, 8)
+                if new_pos_rect.collidelist(self.level.obstacle_rects) == -1:
+
+
+                    new_direction = direction
+                    break
+            elif direction == self.DIR_DOWNLEFT and x > 1 and y < 38:
+                new_pos_rect = self.rect.move(-8, 8)
+                if new_pos_rect.collidelist(self.level.obstacle_rects) == -1:
+
+
+                    new_direction = direction
+                    break
+
 
         # if we can go anywhere else, turn around
         if new_direction == None:
@@ -1289,11 +1423,16 @@ class Enemy(Tank):
         x = self.rect.left
         y = self.rect.top
 
+        ### Can nhac sua 
         if new_direction in (self.DIR_RIGHT, self.DIR_LEFT):
             axis_fix = self.nearest(y, 16) - y
 
+        elif new_direction in (self.DIR_UP, self.DIR_DOWN):
+            axis_fix = self.nearest(x, 16) - x
         else:
             axis_fix = self.nearest(x, 16) - x
+            axis_fix = self.nearest(y, 16) - y
+
 
         axis_fix = 0
 
@@ -1315,10 +1454,22 @@ class Enemy(Tank):
             for px in range(0, pixels, self.speed):
 
                 positions.append([x-px, y])
+        
+
+        elif new_direction == self.DIR_UPRIGHT:
+            for px in range(0, pixels, self.speed):
+                positions.append([x+px, y-px])
+        elif new_direction == self.DIR_UPLEFT:
+            for px in range(0, pixels, self.speed):
+                positions.append([x-px, y-px])
+        elif new_direction == self.DIR_DOWNRIGHT:
+            for px in range(0, pixels, self.speed):
+                positions.append([x+px, y+px])
+        elif new_direction == self.DIR_DOWNLEFT:
+            for px in range(0, pixels, self.speed):
+                positions.append([x-px, y+px])
 
         return positions
-
-
 
 class Player(Tank):
 
@@ -1415,7 +1566,24 @@ class Player(Tank):
         elif direction == self.DIR_LEFT:
             new_position = [self.rect.left - self.speed, self.rect.top]
             if new_position[0] < 0:
+                return
+        elif direction == self.DIR_UPRIGHT:
+            new_position = [self.rect.left + self.speed, self.rect.top - self.speed]
+            if new_position[0] > (640 - 40) and new_position[1] < 0:
+                return
+        elif direction == self.DIR_UPLEFT:
+            new_position = [self.rect.left - self.speed, self.rect.top - self.speed]
+            if new_position[0] < 0 and new_position[1] < 0:
 
+                return
+        elif direction == self.DIR_DOWNRIGHT:
+            new_position = [self.rect.left + self.speed, self.rect.top + self.speed]
+            if new_position[0] > (640 - 40) and new_position[1] > (640 - 40) :
+
+                return
+        elif direction == self.DIR_DOWNLEFT:
+            new_position = [self.rect.left - self.speed, self.rect.top + self.speed]
+            if new_position[0] < 0 and new_position[1] > (640 - 40):
                 return
 
         player_rect = pygame.Rect(new_position, [40, 40])
@@ -1455,13 +1623,19 @@ class Player(Tank):
         self.health = 100
         self.paralised = False
         self.paused = False
-        self.pressed = [False] * 4
+        if mode_cross:
+            self.pressed = [False] * 8
+        else:
+            self.pressed = [False] * 4
         self.state = self.STATE_ALIVE
 
 class Game():
 
     # direction constants
-    (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)
+    if mode_cross:
+        (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT, DIR_UPRIGHT, DIR_UPLEFT, DIR_DOWNRIGHT, DIR_DOWNLEFT) = range(8)
+    else:
+        (DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT) = range(4)
 
     TILE_SIZE = 16
 
@@ -2368,7 +2542,7 @@ class Game():
 
             if c_control.empty()!=True:
                 try:
-                    operations = c_control.get(False)
+                    operations = c_control.get(False)  ### Thu
                 except Queue.Empty:
                     skip_this=True
             #---------------------------------------------
@@ -2378,9 +2552,6 @@ class Game():
 
                     pass
                 elif event.type == pygame.QUIT:
-
-
-
 
                     self.kill_ai_process(p)
                     self.clear_queue(p_mapinfo)
@@ -2417,6 +2588,14 @@ class Game():
                                     player.pressed[2] = True
                                 elif index == 4:
                                     player.pressed[3] = True
+                                elif index == 5:
+                                    player.pressed[4] = True
+                                elif index == 6:
+                                    player.pressed[5] = True
+                                elif index == 7:
+                                    player.pressed[6] = True
+                                elif index == 8:
+                                    player.pressed[7] = True
 
                 elif event.type == pygame.KEYUP and not self.game_over and self.active:
 
@@ -2435,14 +2614,25 @@ class Game():
                                     player.pressed[2] = False
                                 elif index == 4:
                                     player.pressed[3] = False
-
+                                elif index == 5:
+                                    player.pressed[4] = False
+                                elif index == 6:
+                                    player.pressed[5] = False
+                                elif index == 7:
+                                    player.pressed[6] = False
+                                elif index == 8:
+                                    player.pressed[7] = False
 
             for player in players:
                 if player.state == player.STATE_ALIVE and not self.game_over and self.active:
                     if operations[0]==1:
                         if players[0].fire() and play_sounds:
                             sounds["fire"].play()
-                    if operations[1]<4:
+                    if mode_cross:
+                        key_nr = 8
+                    else:
+                        key_nr = 4
+                    if operations[1]<key_nr:
                         players[0].pressed[operations[1]] = True
                         if player.pressed[0] == True:
                             player.move(self.DIR_UP);
@@ -2452,8 +2642,17 @@ class Game():
                             player.move(self.DIR_DOWN);
                         elif player.pressed[3] == True:
                             player.move(self.DIR_LEFT);
+                        elif player.pressed[4] == True:
+                            player.move(self.DIR_UPRIGHT);
+                        elif player.pressed[5] == True:
+                            player.move(self.DIR_UPLEFT);
+                        elif player.pressed[6] == True:
+                            player.move(self.DIR_DDIR_DOWNRIGHT);
+                        elif player.pressed[7] == True:
+                            player.move(self.DIR_DOWNLEFT);
+
                 player.update(time_passed)
-                if operations[1]<4:
+                if operations[1]<key_nr:
                     player.pressed[operations[1]] = False
 
 
@@ -2541,7 +2740,7 @@ class Game():
         print ("kill ai_process!!")
 
     def clear_queue(self,queue):
-        if queue.empty()!=True:
+        if Queue.empty()!=True:
             try:
                 ueue.get(False)
                 print ("clear queue!!")
