@@ -6,13 +6,18 @@ import ai
 import copy, random
 import threading
 import signal
-
+import time
+import numpy as np
 import multiprocessing
 import Queue
 
 allspeed = 1
-max_enemies = 14
-Enemy_exist_sametime = True 
+max_enemies = 5
+Enemy_exist_sametime = True
+
+stage_exist = []
+if(max_enemies>5):
+    max_enemies = 5
 
 class myRect(pygame.Rect):
     """ Add type property """
@@ -262,6 +267,15 @@ class Bullet():
         collisions = self.rect.collidelistall(rects)
 
 
+        if collisions != []:
+            for i in collisions:
+                if self.level.hitTile(rects[i].topleft, self.power, self.owner == self.OWNER_PLAYER):
+                    has_collided = True
+        if has_collided:
+            self.explode()
+            return
+
+
         # check for collisions with other bullets
         for bullet in bullets:
             if self.state == self.STATE_ACTIVE and bullet.owner != self.owner and bullet != self and self.rect.colliderect(bullet.rect):
@@ -445,28 +459,17 @@ class Level():
             if tile.topleft == pos:
                 if tile.type == self.TILE_BRICK:
 
-
-
-
-
                     if play_sounds and sound:
                         sounds["brick"].play()
-                    #self.mapr.remove(tile)             ###tri
+                    self.mapr.remove(tile)             ###tri
                     self.updateObstacleRects()
                     return True
                 elif tile.type == self.TILE_STEEL:
 
-
-
-
-
-
-
-
                     if play_sounds and sound:
                         sounds["steel"].play()
                     if power == 2:
-                        #self.mapr.remove(tile)                 ###tri
+                        self.mapr.remove(tile)                 ###tri
                         self.updateObstacleRects()
                     return True
                 else:
@@ -481,15 +484,17 @@ class Level():
             self.tile_water = self.tile_water1
 
 
-    def loadLevel(self, level_nr = 1):
+    def loadLevel(self, level_nr = None):
         """ Load specified level
         @return boolean Whether level was loaded
 
         """
-        filename = "levels/"+str(level_nr)
+        temp_ = np.random.randint(1,8)
+        while(temp_ in stage_exist):
+            temp_ = np.random.randint(1,8)
+        stage_exist.append(temp_)
+        filename = "levels/"+str(temp_)  ### Thu level_nr
         if (not os.path.isfile(filename)):
-
-
             return False
         level = []
         f = open(filename, "r")
@@ -1058,30 +1063,23 @@ class Enemy(Tank):
 
         global players, enemies
 
+        Usize_width = (self.level.TILE_SIZE * 2 - self.rect.width) / 2
+        Usize_height = (self.level.TILE_SIZE * 2 - self.rect.height) / 2
         ## Spawning Position 
         available_positions = [
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [8 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [15 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2,  (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [23* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [30* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 5 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 9 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 13 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 17 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 5 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 9 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 13 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 17 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2]
-
+            [0* self.level.TILE_SIZE + Usize_width, Usize_height],
+            [18 * self.level.TILE_SIZE + Usize_width, Usize_height],
+            [38 * self.level.TILE_SIZE + Usize_width,  Usize_height],
+            [Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
+            [38 * self.level.TILE_SIZE + Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
         ]
+
         available_positions = available_positions[:max_enemies]
         random.shuffle(available_positions)
 
         for pos in available_positions:
 
-            enemy_rect = pygame.Rect(pos, [40, 40])
+            enemy_rect = pygame.Rect(pos, [40, 40])  ### Thu 40 hay 26 nhi?1
 
             # collisions with other enemies
 
@@ -2051,7 +2049,7 @@ class Game():
 
             hiscore = self.loadHiscore()
 
-            screen.blit(self.font.render("GAME- "+str(hiscore), True, pygame.Color('red')), [200, 50])
+            screen.blit(self.font.render("GAME- "+str(hiscore), True, pygame.Color('red')), [250, 50])
 
             screen.blit(self.font.render("1 PLAYER", True, pygame.Color('pink')), [275, 400])
             screen.blit(self.font.render("2 PLAYERS", True, pygame.Color('pink')), [275, 425])
@@ -2368,7 +2366,7 @@ class Game():
 
             if c_control.empty()!=True:
                 try:
-                    operations = c_control.get(False)
+                    operations = c_control.get(False)  ### Thu
                 except Queue.Empty:
                     skip_this=True
             #---------------------------------------------
@@ -2541,7 +2539,7 @@ class Game():
         print ("kill ai_process!!")
 
     def clear_queue(self,queue):
-        if queue.empty()!=True:
+        if Queue.empty()!=True:
             try:
                 ueue.get(False)
                 print ("clear queue!!")
