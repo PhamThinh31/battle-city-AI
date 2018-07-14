@@ -6,13 +6,23 @@ import ai
 import copy, random
 import threading
 import signal
-
+import time
+import numpy as np
 import multiprocessing
-import Queue
+import queue
 
 allspeed = 1
+<<<<<<< HEAD
 max_enemies = 14
 Enemy_exist_sametime = True 
+=======
+max_enemies = 5
+Enemy_exist_sametime = True
+
+stage_exist = []
+if(max_enemies>5):
+    max_enemies = 5
+>>>>>>> 085be746b99df6cfdc48c67470ba3de5f25938cb
 
 class myRect(pygame.Rect):
     """ Add type property """
@@ -395,11 +405,12 @@ class Level():
         global sprites
 
         # max number of enemies simultaneously  being on map
+
         self.max_active_enemies = max_enemies
 
 
         tile_images = [
-            pygame.Surface((8*2, 8*2)),
+            sprites.subsurface(40*2, 64*2, 8*2, 8*2),
             sprites.subsurface(48*2, 64*2, 8*2, 8*2),
             sprites.subsurface(48*2, 72*2, 8*2, 8*2),
             sprites.subsurface(56*2, 72*2, 8*2, 8*2),
@@ -422,7 +433,6 @@ class Level():
 
         level_nr = 1 if level_nr == None else level_nr%35
         if level_nr == 0:
-
             level_nr = 35
 
         self.loadLevel(level_nr)
@@ -492,7 +502,11 @@ class Level():
         @return boolean Whether level was loaded
 
         """
-        filename = "levels/"+str(level_nr)
+        temp_ = np.random.randint(1,8)
+        while(temp_ in stage_exist):
+            temp_ = np.random.randint(1,8)
+        stage_exist.append(temp_)
+        filename = "levels/"+str(25)  ### Thu level_nr
         if (not os.path.isfile(filename)):
 
 
@@ -508,6 +522,7 @@ class Level():
 
 
             for ch in row:
+
                 if ch == "#":
                     self.mapr.append(myRect(x, y, self.TILE_SIZE, self.TILE_SIZE, self.TILE_BRICK))
 
@@ -539,7 +554,7 @@ class Level():
         global screen
 
         if tiles == None:
-            tiles = [TILE_BRICK, TILE_STEEL, TILE_WATER, TILE_GRASS, TILE_FROZE]
+            tiles = [TILE_EMPTY,TILE_BRICK, TILE_STEEL, TILE_WATER, TILE_GRASS, TILE_FROZE] ### Thu
 
         for tile in self.mapr:
 
@@ -1064,24 +1079,17 @@ class Enemy(Tank):
 
         global players, enemies
 
+        Usize_width = (self.level.TILE_SIZE * 2 - self.rect.width) / 2
+        Usize_height = (self.level.TILE_SIZE * 2 - self.rect.height) / 2
         ## Spawning Position 
         available_positions = [
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [8 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [15 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2,  (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [23* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [30* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 5 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 9 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 13 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [(self.level.TILE_SIZE * 2 - self.rect.width) / 2, 17 * self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 5 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 9 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 13 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2],
-            [37* self.level.TILE_SIZE + (self.level.TILE_SIZE * 2 - self.rect.width) / 2, 17 * self.level.TILE_SIZE +(self.level.TILE_SIZE * 2 - self.rect.height) / 2]
-
+            [0* self.level.TILE_SIZE + Usize_width, Usize_height],
+            [18 * self.level.TILE_SIZE + Usize_width, Usize_height],
+            [38 * self.level.TILE_SIZE + Usize_width,  Usize_height],
+            [Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
+            [38 * self.level.TILE_SIZE + Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
         ]
+
         available_positions = available_positions[:max_enemies]
         random.shuffle(available_positions)
 
@@ -1956,7 +1964,7 @@ class Game():
 
         screen.fill([0, 0, 0])
 
-        self.level.draw([self.level.TILE_EMPTY, self.level.TILE_BRICK, self.level.TILE_STEEL, self.level.TILE_FROZE, self.level.TILE_WATER])
+        self.level.draw([ self.level.TILE_BRICK, self.level.TILE_STEEL, self.level.TILE_FROZE, self.level.TILE_WATER]) ### Thu
 
 
 
@@ -2283,6 +2291,7 @@ class Game():
         global players, bullets, bonuses, play_sounds, sounds
 
         operations = [random.randint(0,0),random.randint(0,3),True]
+        
 
 
 
@@ -2362,8 +2371,12 @@ class Game():
 
         p.start()
         #--------------------
-
+        start_time = time.time()
         while self.running:
+            end_time = time.time()
+            # print("Time each fetch: ",end_time - start_time)
+            # print("self.level.TILE_SIZE:",self.level.TILE_SIZE,self.rect.width)
+            start_time = time.time()
 
             time_passed = self.clock.tick(50)
 
@@ -2374,8 +2387,9 @@ class Game():
 
             if c_control.empty()!=True:
                 try:
-                    operations = c_control.get(False)
-                except Queue.Empty:
+                    operations = [0,4]  #c_control.get(False)  ### Thu
+                    # print("Don't have ")
+                except queue.Empty:
                     skip_this=True
             #---------------------------------------------
 
@@ -2384,8 +2398,6 @@ class Game():
 
                     pass
                 elif event.type == pygame.QUIT:
-
-
 
 
                     self.kill_ai_process(p)
@@ -2442,13 +2454,26 @@ class Game():
                                 elif index == 4:
                                     player.pressed[3] = False
 
-
+            # _temp = 2
+            # print("First _temp",_temp)
             for player in players:
+                # if(type(operations[1])!=type(1)):
+                #     operations[1] = _temp
+                #     print("operations[1]==None",_temp)
+                # else:
+                #     _temp = operations[1]
+                # print(type(operations),operations)
                 if player.state == player.STATE_ALIVE and not self.game_over and self.active:
+
                     if operations[0]==1:
                         if players[0].fire() and play_sounds:
                             sounds["fire"].play()
+<<<<<<< HEAD
                     if operations[1]<4:
+=======
+       
+                    if operations[1]<8:
+>>>>>>> 085be746b99df6cfdc48c67470ba3de5f25938cb
                         players[0].pressed[operations[1]] = True
                         if player.pressed[0] == True:
                             player.move(self.DIR_UP);
@@ -2551,7 +2576,7 @@ class Game():
             try:
                 ueue.get(False)
                 print ("clear queue!!")
-            except Queue.Empty:
+            except queue.Empty:
                 print ("Queue already is empty!!")
 
 
