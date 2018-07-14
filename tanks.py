@@ -7,7 +7,7 @@ import copy, random
 import threading
 import signal
 import time
-import numpy as np
+from random import randint
 import multiprocessing
 import Queue
 
@@ -543,9 +543,9 @@ class Level():
         @return boolean Whether level was loaded
 
         """
-        temp_ = np.random.randint(1,8)
+        temp_ = randint(1,7)
         while(temp_ in stage_exist):
-            temp_ = np.random.randint(1,8)
+            temp_ = randint(1,7)
         stage_exist.append(temp_)
         filename = "levels/"+str(temp_)  ### Thu level_nr
         if (not os.path.isfile(filename)):
