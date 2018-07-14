@@ -19,7 +19,9 @@ stage_exist = []
 if(max_enemies>5):
     max_enemies = 5
 
+
 mode_cross = True
+
 
 class myRect(pygame.Rect):
     """ Add type property """
@@ -1139,10 +1141,17 @@ class Enemy(Tank):
         Usize_height = (self.level.TILE_SIZE * 2 - self.rect.height) / 2
         ## Spawning Position 
         available_positions = [
+
             [1* self.level.TILE_SIZE + Usize_width, Usize_height],
             [18 * self.level.TILE_SIZE + Usize_width, Usize_height],
             [38 * self.level.TILE_SIZE + Usize_width,  Usize_height],
             [1* self.level.TILE_SIZE  + Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
+
+            [0* self.level.TILE_SIZE + Usize_width, Usize_height],
+            [18 * self.level.TILE_SIZE + Usize_width, Usize_height],
+            [38 * self.level.TILE_SIZE + Usize_width,  Usize_height],
+            [Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
+
             [38 * self.level.TILE_SIZE + Usize_width, 8 * self.level.TILE_SIZE + Usize_height],
         ]
 
@@ -2225,7 +2234,7 @@ class Game():
 
             hiscore = self.loadHiscore()
 
-            screen.blit(self.font.render("GAME- "+str(hiscore), True, pygame.Color('red')), [200, 50])
+            screen.blit(self.font.render("GAME- "+str(hiscore), True, pygame.Color('red')), [250, 50])
 
             screen.blit(self.font.render("1 PLAYER", True, pygame.Color('pink')), [275, 400])
             screen.blit(self.font.render("2 PLAYERS", True, pygame.Color('pink')), [275, 425])
