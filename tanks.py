@@ -9,15 +9,17 @@ import signal
 import time
 import numpy as np
 import multiprocessing
-import Queue
+import queue
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
-allspeed = 2
-max_enemies = 5
-Enemy_exist_sametime = True
+dic = np.load(dir_path + '/config.npy').item()
+
+allspeed =  dic['s']
+max_enemies = dic['m']
+Enemy_exist_sametime = dic['e']
 
 stage_exist = []
-if(max_enemies>5):
-    max_enemies = 5
+
 
 class myRect(pygame.Rect):
     """ Add type property """
@@ -400,8 +402,12 @@ class Level():
         to next according level so, for example, if level_nr ir 37, then load level 2 """
 
 
-        global sprites
+        global sprites, max_enemies
+        if (type(level_nr) == type(1)):
+            max_enemies += 1
 
+        if(max_enemies>5):
+            max_enemies = 5
         # max number of enemies simultaneously  being on map
         self.max_active_enemies = max_enemies
 
@@ -490,8 +496,8 @@ class Level():
 
         """
         temp_ = np.random.randint(1,8)
-        while(temp_ in stage_exist):
-            temp_ = np.random.randint(1,8)
+        # while(temp_ in stage_exist):
+        #     temp_ = np.random.randint(1,8)
         stage_exist.append(temp_)
         filename = "levels/"+str(temp_)  ### Thu level_nr
         if (not os.path.isfile(filename)):
@@ -2292,7 +2298,7 @@ class Game():
 
         # set number of enemies by types (basic, fast, power, armor) according to level
         levels_enemies = (
-            (18,2,0,0), (5,5,4,0), (6,6,2,2), (7,7,2,3), (8,5,5,4),
+            (8,2,0,0), (5,5,4,0), (6,6,2,2), (7,7,2,3), (8,5,5,4),
             (9,2,7,5), (7,4,6,3), (7,4,7,2), (6,4,7,3), (12,2,4,2),
             (5,5,4,6), (0,6,8,6), (0,8,8,4), (0,4,10,6), (0,2,10,8),
             (16,2,0,2), (8,2,8,2), (2,8,6,4), (4,4,4,8), (2,8,2,8),
@@ -2367,7 +2373,7 @@ class Game():
             if c_control.empty()!=True:
                 try:
                     operations = c_control.get(False)  ### Thu
-                except Queue.Empty:
+                except queue.Empty:
                     skip_this=True
             #---------------------------------------------
 
@@ -2438,8 +2444,14 @@ class Game():
             for player in players:
                 if player.state == player.STATE_ALIVE and not self.game_over and self.active:
                     if operations[0]==1:
+
                         if players[0].fire() and play_sounds:
                             sounds["fire"].play()
+                    # if(type(operations[1])!=type(1)):
+                    #     operations = [0,4]
+                    # print("type(operations[1])",type(operations[1]))
+                    # print(type(operations[1])==None)
+
                     if operations[1]<4:
                         players[0].pressed[operations[1]] = True
                         if player.pressed[0] == True:
@@ -2539,11 +2551,11 @@ class Game():
         print ("kill ai_process!!")
 
     def clear_queue(self,queue):
-        if Queue.empty()!=True:
+        if queue.empty()!=True:
             try:
                 ueue.get(False)
                 print ("clear queue!!")
-            except Queue.Empty:
+            except queue.empty():
                 print ("Queue already is empty!!")
 
 

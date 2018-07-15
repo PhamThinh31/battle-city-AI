@@ -4,7 +4,7 @@ import time
 import multiprocessing
 import pygame
 import math
-import Queue
+import queue
 
 
 class PriorityQueue:
@@ -86,7 +86,7 @@ class ai_agent():
         if p_mapinfo.empty() != True:
             try:
                 self.mapinfo = p_mapinfo.get(False)
-            except Queue.Empty:
+            except queue.Empty:
                 skip_this = True
 
     def Update_Strategy(self, c_control, shoot, move_dir):
