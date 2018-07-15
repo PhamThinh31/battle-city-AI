@@ -9,7 +9,6 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def main(args):
     dictionary = {"s":args.allspeed,"m":args.max_enemies,"e":args.Enemy_exist_sametime}
-    print(dir_path)
     np.save(dir_path + "/config",dictionary)
 
 
