@@ -23,15 +23,12 @@ class PriorityQueue:
 
 class ai_agent():
     mapinfo = []
-    # castle rect
-    center_rect = pygame.Rect(12 * 16, 20 * 16, 32, 32)
 
     def __init__(self):
         self.mapinfo = []
 
     # rect:                   [left, top, width, height]
     # rect_type:              0:empty 1:brick 2:steel 3:water 4:grass 5:froze
-    # center_rect:            [12*16, 20*16, 32, 32]
     # mapinfo[0]:             bullets [rect, direction, speed]]
     # mapinfo[1]:             enemies [rect, direction, speed, type]]
     # enemy_type:             0:TYPE_BASIC 1:TYPE_FAST 2:TYPE_POWER 3:TYPE_ARMOR
@@ -44,60 +41,45 @@ class ai_agent():
     # def Update_Strategy     Update your strategy
 
     def operations(self, p_mapinfo, c_control):
-
+        speed = self.mapinfo[3][0][2]
         while True:
             self.Get_mapInfo(p_mapinfo)
-
+            
             player_rect = self.mapinfo[3][0][0]
             # sort enemy with manhattan distance to castle
-
-            sorted_enemy_with_distance_to_castle = sorted(self.mapinfo[1],
-                                                          key=lambda x: self.manhattan_distance(x[0].center,
-                                                                                                self.center_rect.center))
-            # sort enemy with manhattan distance to player current position
             sorted_enemy_with_distance_to_player = sorted(self.mapinfo[1],
                                                           key=lambda x: self.manhattan_distance(x[0].center,
                                                                                                 player_rect.center))
-
-            # default position
-            default_pos_rect = pygame.Rect(320, 320, 40, 40)
+            # default_pos_rect = pygame.Rect(320, 320, 40, 40)
             # exists enemy
-            if sorted_enemy_with_distance_to_castle:
-                # if enemy distance with castle < 150, chase it
-                if self.manhattan_distance(sorted_enemy_with_distance_to_castle[0][0].topleft, self.center_rect.topleft) < 150:
-                    enemy_rect = sorted_enemy_with_distance_to_castle[0][0]
-                    enemy_direction = sorted_enemy_with_distance_to_castle[0][1]
-                # else chase the nearest enemy to player
-                else:
-                    enemy_rect = sorted_enemy_with_distance_to_player[0][0]
-                    enemy_direction = sorted_enemy_with_distance_to_player[0][1]
+            if sorted_enemy_with_distance_to_player:
+                enemy_rect = sorted_enemy_with_distance_to_player[0][0]
+                enemy_direction = sorted_enemy_with_distance_to_player[0][1]
 
                 # check if inline with enemy
                 inline_direction = self.inline_with_enemy(player_rect, enemy_rect)
 
                 # perform a star
-                astar_direction = self.a_star(player_rect, enemy_rect, 6)
+                astar_direction = self.a_star(player_rect, enemy_rect, speed)
 
                 # perform bullet avoidance
-                shoot, direction = self.bullet_avoidance(self.mapinfo[3][0], 6, self.mapinfo[0], astar_direction, inline_direction)
+                shoot, direction = self.bullet_avoidance(self.mapinfo[3][0], speed, self.mapinfo[0], astar_direction, inline_direction)
 
                 # update strategy
                 self.Update_Strategy(c_control, shoot, direction)
                 time.sleep(0.005)
+            # else:
+            #     # perform a star
+            #     astar_direction = self.a_star(player_rect, default_pos_rect, 6)
+
+            #     # update strategy
+            #     if astar_direction is not None:
+            #         self.Update_Strategy(c_control, 0, astar_direction)
+            #         # time.sleep(0.001)
+            #     else:
+            #         self.Update_Strategy(c_control, 0, 0)
 
             # go to default position
-            else:
-                # perform a star
-                astar_direction = self.a_star(player_rect, default_pos_rect, 6)
-
-                # update strategy
-                if astar_direction is not None:
-                    self.Update_Strategy(c_control, 0, astar_direction)
-                    # time.sleep(0.001)
-                else:
-                    self.Update_Strategy(c_control, 0, 0)
-                    # time.sleep(0.001)
-
             # ------------------------------------------------------------------------------------------------------
 
     def Get_mapInfo(self, p_mapinfo):
@@ -152,27 +134,6 @@ class ai_agent():
                     priority = new_cost + self.heuristic(goal, next)
                     frontier.put(next, priority)
                     came_from[next] = current
-
-        # build path
-        # dir_cmd = []
-        # while current != start:
-        #     parent = came_from[current]
-        #     parent_left, parent_top = parent
-        #     current_left, current_top = current
-        #     # up
-        #     if current_top < parent_top:
-        #         dir_cmd.append(0)
-        #     # down
-        #     elif current_top > parent_top:
-        #         dir_cmd.append(2)
-        #     # left
-        #     elif current_left < parent_left:
-        #         dir_cmd.append(3)
-        #     # right
-        #     elif current_left > parent_left:
-        #         dir_cmd.append(1)
-        #     current = came_from[current]
-        # dir_cmd.reverse()
 
         # return the first move is enough
         next = None
@@ -398,8 +359,7 @@ class ai_agent():
         else:
             min_dist_with_bullet = float(1e30000)
 
-        # trigger when bullet distance with player <= 100
-        if min_dist_with_bullet <= 100:
+        if min_dist_with_bullet <= 150:
             # pick the nearest bullet
             bullet_rect = sorted_bullet_info_list[0][0]
             bullet_direction = sorted_bullet_info_list[0][1]

@@ -11,7 +11,7 @@ import numpy as np
 import multiprocessing
 import Queue
 
-allspeed = 1
+allspeed = 2
 max_enemies = 5
 Enemy_exist_sametime = True
 
@@ -1079,7 +1079,7 @@ class Enemy(Tank):
 
         for pos in available_positions:
 
-            enemy_rect = pygame.Rect(pos, [40, 40])  ### Thu 40 hay 26 nhi?1
+            enemy_rect = pygame.Rect(pos, [26, 26])  ### Thu 40 hay 26 nhi?1
 
             # collisions with other enemies
 
@@ -1154,7 +1154,7 @@ class Enemy(Tank):
 
                 return
 
-        new_rect = pygame.Rect(new_position, [40, 40]) ## thinh 
+        new_rect = pygame.Rect(new_position, [26, 26]) ## thinh 
 
         # collisions with tiles
         if new_rect.collidelist(self.level.obstacle_rects) != -1:
@@ -1247,14 +1247,14 @@ class Enemy(Tank):
 
                     new_direction = direction
                     break
-            elif direction == self.DIR_RIGHT and x < 38:
+            elif direction == self.DIR_RIGHT and x < 24:
                 new_pos_rect = self.rect.move(8, 0)
                 if new_pos_rect.collidelist(self.level.obstacle_rects) == -1:
 
 
                     new_direction = direction
                     break
-            elif direction == self.DIR_DOWN and y < 38:
+            elif direction == self.DIR_DOWN and y < 24:
                 new_pos_rect = self.rect.move(0, 8)
                 if new_pos_rect.collidelist(self.level.obstacle_rects) == -1:
 
