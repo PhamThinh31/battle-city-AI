@@ -19,8 +19,10 @@ max_enemies = dic['m']
 Enemy_exist_sametime = dic['e']
 
 stage_exist = []
-
-
+if(type(allspeed)!= type(1)) or (type(max_enemies) != type(1)):
+    allspeed = 1
+    max_enemies = 3
+    Enemy_exist_sametime = False 
 class myRect(pygame.Rect):
     """ Add type property """
     def __init__(self, left, top, width, height, type):

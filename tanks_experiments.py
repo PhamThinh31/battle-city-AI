@@ -22,7 +22,10 @@ stage_exist = []
 
 
 mode_cross = True
-
+if(type(allspeed)!= type(1)) or (type(max_enemies) != type(1)):
+    allspeed = 1
+    max_enemies = 3
+    Enemy_exist_sametime = False 
 
 class myRect(pygame.Rect):
     """ Add type property """
